@@ -82,10 +82,11 @@ async function loadDictionary() {
     try {
         const response = await fetch('https://raw.githubusercontent.com/dwyl/english-words/master/words_alpha.txt');
         const text = await response.text();
+
         const words = text
             .split('\n')
             .map((word) => word.trim().toUpperCase())
-            .filter((word) => word.length >= 3);
+            .filter((word) => word.length >= 2); //words only length 2+ as we can include "it" if our substring is "it"
 
         DICTIONARY = new Set(words);
         preprocessSubstrings();
@@ -117,6 +118,13 @@ function preprocessSubstrings() {
             tempMap.get(substring).push(word);
         }
     });
+    //For every single word, we have just grabbed all 3 and 2 letter chunks
+    //and stored those as a map like this, by substring:
+    // SUBSTRING_MAP: Map {
+    //     "CAT" → [ "CATALYST", "CATCH", "CATEGORY", ... ],
+    //     "AL"  → [ "CATALYST", "ALPHA", "TALENT", ... ],
+    //     ...
+    // }
 
     SUBSTRING_MAP = tempMap;
 }
