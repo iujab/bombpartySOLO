@@ -161,6 +161,7 @@ button {
 
 /* ===== MAIN STAGE ===== */
 .main-stage {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -204,6 +205,74 @@ button {
     letter-spacing: 0.12rem;
 }
 
+/* ===== MISSED WORDS ===== */
+.missed-words {
+    position: absolute;
+    top: 50%;
+    right: calc(var(--sidebar-width) + 1.5rem);
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    width: 14rem;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.missed-words.visible {
+    visibility: visible;
+    opacity: 1;
+}
+
+.missed-words-title {
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 0.15rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 0.15rem;
+}
+
+.missed-word-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.3rem 0.6rem;
+    background: rgba(45, 55, 72, 0.8);
+    border: 1px solid var(--border-color);
+    border-left: 3px solid var(--accent-red);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.missed-word-item:first-of-type {
+    border-left-color: var(--accent-green);
+}
+
+.missed-word-rank {
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    min-width: 1rem;
+}
+
+.missed-word-text {
+    letter-spacing: 0.05rem;
+}
+
+.missed-word-len {
+    margin-left: auto;
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+@keyframes missed-fade-in {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 /* ===== BOMB PULSE ===== */
 @keyframes bomb-pulse {
     0%, 100% { transform: scale(1); }
@@ -231,8 +300,7 @@ button {
     z-index: 15;
     display: flex;
     flex-direction: column;
-    overflow-y: auto;
-    overflow-x: hidden;
+    overflow: hidden;
 }
 
 .control-heading {
@@ -242,6 +310,7 @@ button {
     text-align: center;
     letter-spacing: 0.2rem;
     color: var(--accent-orange);
+    flex-shrink: 0;
 }
 
 .control-group {
@@ -249,6 +318,7 @@ button {
     flex-direction: column;
     gap: 0.5rem;
     margin-bottom: 0.75rem;
+    flex-shrink: 0;
 }
 
 .control-label {
@@ -264,6 +334,7 @@ button {
     height: 1px;
     background: var(--border-color);
     margin: 0.75rem 0;
+    flex-shrink: 0;
 }
 
 .difficulty-grid {
@@ -317,6 +388,7 @@ button {
     border: 1px solid var(--accent-green);
     cursor: pointer;
     transition: background var(--transition-fast), transform var(--transition-fast);
+    flex-shrink: 0;
 }
 
 .start-btn:hover:not(:disabled) {
@@ -333,6 +405,7 @@ button {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    flex-shrink: 0;
 }
 
 .game-over-section.hidden {
@@ -406,12 +479,35 @@ button {
     border-bottom: 1px solid var(--border-bright);
 }
 
-.word-history {
+.word-history-wrapper {
+    position: relative;
     flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.word-history-wrapper::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2.5rem;
+    background: linear-gradient(to bottom, transparent, var(--panel-bg));
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+}
+
+.word-history-wrapper.has-overflow::after {
+    opacity: 1;
+}
+
+.word-history {
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    max-height: 20rem;
+    max-height: 100%;
     scrollbar-width: none;
 }
 
@@ -471,6 +567,7 @@ button {
 /* ===== STATS PANEL ===== */
 .stats-panel {
     margin-top: 0;
+    flex-shrink: 0;
 }
 
 .stats-grid {

@@ -56,9 +56,8 @@ const particleCanvas = document.getElementById('particle-canvas');
 const toastContainer = document.getElementById('toast-container');
 const wordHistory = document.getElementById('word-history');
 
-// Run stats in top bar
-const statWpm = document.getElementById('stat-wpm');
-const statWordsCount = document.getElementById('stat-words-count');
+// Missed words display
+const missedWordsContainer = document.getElementById('missed-words');
 
 // Game over section (inline in sidebar)
 const gameOverSection = document.getElementById('game-over-section');
@@ -109,6 +108,7 @@ let totalCharsTyped = 0;
 let totalTypingTime = 0; // seconds spent typing words (successful only)
 let bestWordValue = 0;
 let bestSingleWpm = 0;
+let typingStartTime = 0; // tracks when user first types in a turn
 
 // ===== INIT =====
 init();
@@ -356,23 +356,87 @@ function addToWordHistory(word, timeTaken, wordValue, wordWpm) {
     while (wordHistory.children.length > MAX_WORD_HISTORY) {
         wordHistory.removeChild(wordHistory.lastChild);
     }
+
+    updateWordHistoryFade();
 }
 
 function clearWordHistory() {
     wordHistory.innerHTML = '';
+    updateWordHistoryFade();
+}
+
+function updateWordHistoryFade() {
+    const wrapper = wordHistory.parentElement;
+    if (!wrapper) return;
+    const hasOverflow = wordHistory.scrollHeight > wrapper.clientHeight;
+    const atBottom = wordHistory.scrollHeight - wordHistory.scrollTop - wordHistory.clientHeight < 4;
+    wrapper.classList.toggle('has-overflow', hasOverflow && !atBottom);
 }
 
 // ===== RUN STATS (top bar) =====
 function updateRunStats() {
-    const avgWpm = totalTypingTime > 0 ? Math.round((totalCharsTyped / 5) / (totalTypingTime / 60)) : 0;
-    statWpm.textContent = avgWpm;
-    statWordsCount.textContent = wordsThisGame;
+    // Stats tracked internally for game-over display, no top-bar UI
+}
+
+// ===== MISSED WORDS SUGGESTIONS =====
+function getMissedWordSuggestions(wordList, usedWords) {
+    // Filter to unused valid words
+    const available = [...wordList].filter(w => !usedWords.has(w));
+    if (available.length === 0) return [];
+
+    // Sort by length (shortest = easiest/best)
+    available.sort((a, b) => a.length - b.length);
+
+    // Pick the best (shortest) word
+    const best = available[0];
+
+    // Pick up to 4 random others (not the best)
+    const rest = available.slice(1);
+    const others = [];
+    const picked = new Set();
+    while (others.length < 4 && others.length < rest.length) {
+        const idx = Math.floor(Math.random() * rest.length);
+        if (!picked.has(idx)) {
+            picked.add(idx);
+            others.push(rest[idx]);
+        }
+    }
+
+    return [best, ...others];
+}
+
+function showMissedWords(words) {
+    if (!words.length) {
+        hideMissedWords();
+        return;
+    }
+
+    let html = '<div class="missed-words-title">You could have typed</div>';
+    words.forEach((word, i) => {
+        html += `<div class="missed-word-item">
+            <span class="missed-word-rank">${i + 1}.</span>
+            <span class="missed-word-text">${escapeHtml(word)}</span>
+            <span class="missed-word-len">${word.length} letters</span>
+        </div>`;
+    });
+
+    missedWordsContainer.innerHTML = html;
+    missedWordsContainer.classList.add('visible');
+}
+
+function hideMissedWords() {
+    missedWordsContainer.classList.remove('visible');
 }
 
 // ===== EVENT LISTENERS =====
 function attachEventListeners() {
     wordForm.addEventListener('submit', handleWordSubmit);
-    wordInput.addEventListener('input', () => updateWordPreview(wordInput.value));
+    wordInput.addEventListener('input', () => {
+        if (!typingStartTime && wordInput.value.length > 0) {
+            typingStartTime = performance.now();
+        }
+        updateWordPreview(wordInput.value);
+    });
 
     startGameBtn.addEventListener('click', () => {
         if (!isDictionaryLoaded) {
@@ -409,6 +473,9 @@ function attachEventListeners() {
 
     // Keyboard shortcuts
     document.addEventListener('keydown', handleKeyboardShortcuts);
+
+    // Word history scroll fade
+    wordHistory.addEventListener('scroll', updateWordHistoryFade);
 
     // Mobile soft keyboard handling
     if (window.visualViewport) {
@@ -528,6 +595,7 @@ function startGame() {
     updateAlphabetUI();
     updateRunStats();
     clearWordHistory();
+    hideMissedWords();
     substringDisplay.textContent = '...';
     gameOverSection.classList.add('hidden');
 
@@ -540,6 +608,7 @@ function startNewTurn() {
     clearInterval(timerInterval);
     currentTime = turnTime;
     turnStartTime = performance.now();
+    typingStartTime = 0;
     wordInput.value = '';
     resetWordPreview();
     wordInput.focus();
@@ -588,7 +657,7 @@ function validateWord(word) {
     const isUsed = usedWordsInGame.has(word);
 
     if (isValid && !isUsed) {
-        const timeTaken = (performance.now() - turnStartTime) / 1000;
+        const timeTaken = (performance.now() - (typingStartTime || turnStartTime)) / 1000;
 
         // Calculate word value BEFORE updating usedCharsInGame
         const wordValue = calculateWordValue(word);
@@ -699,6 +768,10 @@ function loseLife() {
         document.body.classList.add('screen-shake');
         setTimeout(() => document.body.classList.remove('screen-shake'), 400);
     }
+
+    // Show what words the player could have typed (persists until next miss or game end)
+    const suggestions = getMissedWordSuggestions(currentWordList, usedWordsInGame);
+    showMissedWords(suggestions);
 
     if (lives <= 0) {
         gameOver();

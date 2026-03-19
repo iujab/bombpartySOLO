@@ -13,12 +13,7 @@
 
     <header class="top-bar">
         <div id="lives-container" class="lives-container" role="status" aria-live="polite" aria-label="Lives remaining"></div>
-        <div class="top-bar-center">
-            <div id="run-stats" class="run-stats">
-                <span class="run-stat"><span class="run-stat-label">WPM</span><span id="stat-wpm" class="run-stat-value">0</span></span>
-                <span class="run-stat"><span class="run-stat-label">WORDS</span><span id="stat-words-count" class="run-stat-value">0</span></span>
-            </div>
-        </div>
+        <div class="top-bar-center"></div>
         <div class="top-bar-right">
             <button id="sound-btn" class="sound-btn" aria-label="Toggle sound">
                 <svg xmlns="http://www.w3.org/2000/svg" class="sound-icon sound-icon--on" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -39,6 +34,7 @@
                 <h1 id="substring-display" class="substring-display text-shadow" role="status" aria-live="polite">...</h1>
             </div>
         </div>
+        <div id="missed-words" class="missed-words"></div>
     </main>
 
     <aside id="control-panel" class="control-panel">
@@ -78,7 +74,9 @@
                 <span>VAL</span>
                 <span>WPM</span>
             </div>
-            <div id="word-history" class="word-history"></div>
+            <div class="word-history-wrapper">
+                <div id="word-history" class="word-history"></div>
+            </div>
         </div>
 
         <div class="control-divider"></div>
