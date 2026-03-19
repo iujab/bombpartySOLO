@@ -405,6 +405,18 @@ function getMissedWordSuggestions(wordList, usedWords) {
     return [best, ...others];
 }
 
+function highlightSubstring(word, substring) {
+    if (!substring) return escapeHtml(word);
+    const upperWord = word.toUpperCase();
+    const upperSub = substring.toUpperCase();
+    const idx = upperWord.indexOf(upperSub);
+    if (idx === -1) return escapeHtml(word);
+    const before = word.slice(0, idx);
+    const match = word.slice(idx, idx + substring.length);
+    const after = word.slice(idx + substring.length);
+    return `${escapeHtml(before)}<span class="highlighted-substring">${escapeHtml(match)}</span>${escapeHtml(after)}`;
+}
+
 function showMissedWords(words) {
     if (!words.length) {
         hideMissedWords();
@@ -415,7 +427,7 @@ function showMissedWords(words) {
     words.forEach((word, i) => {
         html += `<div class="missed-word-item">
             <span class="missed-word-rank">${i + 1}.</span>
-            <span class="missed-word-text">${escapeHtml(word)}</span>
+            <span class="missed-word-text">${highlightSubstring(word, currentSubstring)}</span>
             <span class="missed-word-len">${word.length} letters</span>
         </div>`;
     });
