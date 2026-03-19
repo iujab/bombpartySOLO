@@ -5,45 +5,99 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bomb Party - Single Player</title>
     <link rel="icon" href="assets/bomb.svg" />
-
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <canvas id="particle-canvas" class="particle-canvas" aria-hidden="true"></canvas>
+
     <header class="top-bar">
-        <div id="lives-container" class="lives-container"></div>
-        <button id="settings-btn" class="settings-btn" aria-label="Toggle controls">
-            <svg xmlns="http://www.w3.org/2000/svg" class="settings-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-        </button>
+        <div id="lives-container" class="lives-container" role="status" aria-live="polite" aria-label="Lives remaining"></div>
+        <div class="top-bar-center">
+            <div id="run-stats" class="run-stats">
+                <span class="run-stat"><span class="run-stat-label">WPM</span><span id="stat-wpm" class="run-stat-value">0</span></span>
+                <span class="run-stat"><span class="run-stat-label">WORDS</span><span id="stat-words-count" class="run-stat-value">0</span></span>
+            </div>
+        </div>
+        <div class="top-bar-right">
+            <button id="sound-btn" class="sound-btn" aria-label="Toggle sound">
+                <svg xmlns="http://www.w3.org/2000/svg" class="sound-icon sound-icon--on" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072M17.95 6.05a8 8 0 010 11.9M6.5 8.788V15.212a1 1 0 00.553.894l4.553 2.277A1 1 0 0013 17.618V6.382a1 1 0 00-1.394-.894L7.053 7.765A1 1 0 006.5 8.659z" />
+                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" class="sound-icon sound-icon--off" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707A1 1 0 0112 5.586v12.828a1 1 0 01-1.707.707L5.586 15z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+                </svg>
+            </button>
+        </div>
     </header>
 
     <main class="main-stage">
         <div id="bomb-container" class="bomb-container">
             <img src="assets/bomb.svg" alt="Bomb" class="bomb-image" />
             <div class="bomb-text">
-                <h1 id="substring-display" class="substring-display text-shadow">...</h1>
+                <h1 id="substring-display" class="substring-display text-shadow" role="status" aria-live="polite">...</h1>
             </div>
         </div>
     </main>
 
     <aside id="control-panel" class="control-panel">
-        <h2 class="control-heading">Game Controls</h2>
+        <h2 class="control-heading">BOMB PARTY</h2>
+
         <div class="control-group">
-            <p class="control-label">Difficulty</p>
-            <button data-difficulty="easy" class="control-btn">Easy <span class="difficulty-note">(500+ words)</span></button>
-            <button data-difficulty="medium" class="control-btn">Medium <span class="difficulty-note">(100+ words)</span></button>
-            <button data-difficulty="hard" class="control-btn">Hard <span class="difficulty-note">(20+ words)</span></button>
-            <button data-difficulty="expert" class="control-btn">Expert <span class="difficulty-note">(1+ words)</span></button>
+            <p class="control-label">DIFFICULTY</p>
+            <div class="difficulty-grid">
+                <button data-difficulty="easy" class="control-btn">EASY <span class="difficulty-note">500+</span></button>
+                <button data-difficulty="medium" class="control-btn">MED <span class="difficulty-note">100+</span></button>
+                <button data-difficulty="hard" class="control-btn">HARD <span class="difficulty-note">20+</span></button>
+                <button data-difficulty="expert" class="control-btn">EXPERT <span class="difficulty-note">1+</span></button>
+            </div>
         </div>
-        <button id="start-game-btn" class="start-btn" disabled>Loading...</button>
-        <p class="start-note">Difficulty updates next time you press Start.</p>
+        <button id="start-game-btn" class="start-btn" disabled>LOADING...</button>
+
+        <div class="control-divider"></div>
+
+        <div id="game-over-section" class="game-over-section hidden">
+            <div class="game-over-banner">GAME OVER</div>
+            <div class="game-over-inline-stats">
+                <div class="go-stat"><span>Words</span><span id="final-words">0</span></div>
+                <div class="go-stat"><span>Avg WPM</span><span id="final-wpm">0</span></div>
+                <div class="go-stat"><span>Best Value</span><span id="final-best-value">0</span></div>
+            </div>
+            <div id="new-high-score-badge" class="new-high-score-badge hidden">NEW BEST</div>
+            <button id="play-again-btn" class="start-btn">PLAY AGAIN</button>
+            <div class="control-divider"></div>
+        </div>
+
+        <div class="word-history-section">
+            <p class="control-label">WORD LOG</p>
+            <div class="word-history-header">
+                <span>WORD</span>
+                <span>TIME</span>
+                <span>LEN</span>
+                <span>VAL</span>
+                <span>WPM</span>
+            </div>
+            <div id="word-history" class="word-history"></div>
+        </div>
+
+        <div class="control-divider"></div>
+
+        <div id="stats-panel" class="stats-panel">
+            <p class="control-label">ALL-TIME STATS</p>
+            <div class="stats-grid">
+                <div class="stat-item"><span>Best WPM</span><span id="stat-best-wpm">0</span></div>
+                <div class="stat-item"><span>Longest Streak</span><span id="stat-longest-streak">0</span></div>
+                <div class="stat-item"><span>Total Words</span><span id="stat-total-words">0</span></div>
+                <div class="stat-item"><span>Most Words</span><span id="stat-longest">0</span></div>
+            </div>
+        </div>
     </aside>
 
+    <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
     <section class="bottom-controls">
-        <div id="timer-bar-container" class="timer-bar-container">
+        <div id="timer-bar-container" class="timer-bar-container" role="timer" aria-label="Time remaining">
             <div id="timer-bar-inner" class="timer-bar-inner"></div>
         </div>
 
@@ -54,6 +108,7 @@
                     type="text"
                     id="word-input"
                     class="word-input"
+                    inputmode="text"
                     autocomplete="off"
                     autocorrect="off"
                     autocapitalize="off"
